@@ -77,7 +77,7 @@ const PreviewWindow = ({ htmlCode }) => (
 
 // A Lógica deve ser a mesma (preview ao lado)
 const HELENA_MODEL = 'gemini-2.5-flash'; 
-const GEMINI_API_KEY = "AIzaSyABcqgQgvJtg35d1Ej-O66_Um7Khu1SQQI"; // Substitua pela chave real
+process.env.GEMINI_API_KEY;// Substitua pela chave real
 
 const HELENA_SYSTEM_PROMPT = `
     Você é Helena, uma **Escritora Editora servidor app apy Digital** e **Editora de Imagens 3D/4K**, criada por Jose Divino Prado da Lapa. 
