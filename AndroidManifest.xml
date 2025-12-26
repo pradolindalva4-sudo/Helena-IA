@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="helena.engenheira.software.ia"
+    android:versionCode="1"
+    android:versionName="24.0">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Helena: Software Engineer IA"
+        android:theme="@style/Theme.AppCompat.NoActionBar">
+        
+        <activity
+            android:name="com.MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="developer"
+            android:value="Sr. José Divino Prado da Lapa - Engenheiro Sênior" />
+        <meta-data
+            android:name="registration_id"
+            android:value="jdp000000000160620" />
+    </application>
+</manifest>

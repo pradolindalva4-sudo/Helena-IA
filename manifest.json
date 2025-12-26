@@ -1,0 +1,17 @@
+{
+  "name": "Helena: Escritora e Editora Digital AI",
+  "short_name": "Helena engenheira de Software",
+  "description": "Helena: Criadora de projetos Software, Editora Digital AI e Criadora de Imagens 3D/4K. Desenvolvido por Jose Divino Prado da Lapa.",
+  "start_url": "criadora editora e servidor app py/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    // ... (inclua todos os ícones restantes, como no seu arquivo anterior)
+  ]
+}

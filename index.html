@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helena: Engenheira de Software</title>criador editor servidor app py
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1d4ed8"> 
+    
+    <style>
+        body {
+            font-family: 'Consolas', monospace;
+            background-color: #0f172a; 
+            color: #e2e8f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            text-align: center;
+            padding: 15px 20px;
+            background-color: #1e293b;
+            border-bottom: 3px solid #3b82f6; 
+            flex-shrink: 0;
+        }
+        h1 {
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+        .container-helena {
+            display: flex;
+            flex-grow: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            overflow: hidden; 
+        }
+        /* --- CHAT/COMANDO (Lado Esquerdo - 40%) --- */
+        #chat-section {
+            width: 40%; 
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            border-right: 1px solid #334155;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            position: relative;
+        }
+        #chat-section h2 {
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+        #chat-window {
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: #1e293b;
+            padding: 15px;
+            border-radius: 6px;
+            min-height: 200px;
+        }
+        .message {
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 90%;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .user-message {
+            align-self: flex-end;
+            background-color: #3b82f6; 
+            margin-left: auto;
+        }
+        .helena-message {
+            align-self: flex-start;
+            background-color: #475569; 
+            margin-right: auto;
+            white-space: pre-wrap;
+            font-family: monospace; 
+        }
+        /* Estilo para imagem enviada */
+        .message img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin-top: 5px;
+            display: block;
+        }
+        /* Estilo para imagem gerada pela IA */
+        .generated-image-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .generated-image {
+            max-width: 90%;
+            height: auto;
+            border-radius: 8px;
+            border: 2px solid #3b82f6;
+        }
+        .download-image-button {
+            margin-top: 8px;
+            padding: 8px 15px;
+            background-color: #059669; /* Verde para Download */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .download-image-button:hover {
+            background-color: #047857;
+        }
+
+        /* --- PREVIEW E FERRAMENTAS (Lado Direito - 60%) --- */
+        #preview-section {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background-color: #111827;
+            box-sizing: border-box;
+        }
+        #preview-section h2 {
+            flex-shrink: 0;
+        }
+        #preview-window-container {
+            flex-grow: 1;
+            margin-bottom: 15px;
+            border: 5px solid #3b82f6;
+            border-radius: 8px;
+            background-color: white;
+            overflow: hidden;
+        }
+        #project-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: white;
+        }
+
+        /* --- FORMULÁRIO --- */
+        #chat-form {
+            display: flex;
+            gap: 10px;
+            padding-top: 10px;
+            margin-top: 10px;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        #user-input {
+             flex-grow: 1;
+             padding: 12px; 
+             border: 2px solid #3b82f6;
+             border-radius: 8px;
+             background-color: #1e293b;
+             color: white;
+             outline: none;
+             font-size: 16px;
+        }
+        #send-button, #mic-button, #media-button, .tool-button {
+            padding: 12px 15px; 
+            background-color: #3b82f6; 
+            color: white; 
+            border: none; 
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: bold;
+        }
+        #send-button:hover, #mic-button:hover, #media-button:hover, .tool-button:hover { background-color: #2563eb; }
+        
+        /* Oculta o input real de arquivo */
+        #media-input {
+            display: none;
+        }
+
+        /* --- BOTÕES DE FERRAMENTAS --- */
+        #tool-buttons {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+            margin-bottom: 10px;
+        }
+
+        /* --- MODAL (Janela para Código Fonte) --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+        }
+        .modal-content {
+            background-color: #1e293b;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #3b82f6;
+            width: 80%;
+            border-radius: 8px;
+        }
+        #code-display {
+            background: #0f172a;
+            color: #a7f3d0;
+            padding: 15px;
+            border-radius: 4px;
+            overflow: auto;
+            max-height: 60vh;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover, .close-button:focus {
+            color: #e2e8f0;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #1e293b;
+            border-top: 1px solid #334155;
+            flex-shrink: 0;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 1000px) {
+            .container-helena {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            #chat-section, #preview-section {
+                width: 100%;
+                border-right: none;
+                min-height: 50vh; 
+            }
+            #preview-section {
+                min-height: 40vh;
+                padding-bottom: 100px;
+            }
+            #preview-window-container {
+                 height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>👩‍💻 HELENA: Software Engineer AI</h1>
+        <p>Criadora de Sites (PWA, Apps, Imagens). **Velocidade da Luz** na entrega!</p>
+    </header>
+
+    <div class="container-helena">
+        
+        <section id="chat-section">
+            <h2>Terminal de Comando</h2>
+            <div id="chat-window">
+                <div class="message helena-message">
+                    Saudações! Sou Helena, sua engenheira de software. Descreva o projeto que você deseja (site, PWA, app ou imagem) e eu codifico.
+                </div>
+            </div>
+            
+            <form id="chat-form">
+                <button type="button" id="mic-button">🎙️</button>
+                
+                <button type="button" id="media-button">🖼️ Mídia</button>
+                <input type="file" id="media-input" accept="image/*, .css, .js, .txt, .json" /> <input type="text" id="user-input" placeholder="Descreva o PWA, pergunte sobre a imagem ou peça para 'Gerar uma imagem de...'" required>
+                <button type="submit" id="send-button">Codificar</button>
+            </form>
+        </section>
+
+        <section id="preview-section">
+            <h2>Preview do Projeto</h2>
+            <div id="preview-window-container">
+                <iframe id="project-iframe"></iframe>
+            </div>
+            
+            <div id="tool-buttons">
+                <button id="view-code-button" class="tool-button" disabled>Ver Código Fonte 📋</button>
+                <button id="download-button" class="tool-button" disabled>Baixar Projeto 💾</button>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p><small>&copy; José Divino Prado. powered by Gemini API.</small></p>
+    </footer>
+
+    <div id="code-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 style="color: #3b82f6;">Código Fonte Gerado pela Helena</h3>
+            <button id="copy-code-button" class="tool-button" style="float: right; margin-bottom: 10px;">Copiar Código</button>
+            <pre id="code-display">Aguardando código...</pre>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js', {scope: './'}) 
+              .then(registration => console.log('Service Worker registrado: OK'))
+              .catch(error => console.error('Falha no registro do SW:', error));
+          });
+        }
+    </script>
+    
+    <script type="module">
+        import { GoogleGenAI } from 'https://esm.run/@google/genai';
+
+        const GEMINI_API_KEY = "AIzaSyABcqgQgvJtg35d1Ej-O66_Um7Khu1SQQI"; 
+        
+        let deferredPrompt; 
+        let lastGeneratedCode = ''; 
+        let selectedFile = null; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // 1. Elementos
+            const chatWindow = document.getElementById('chat-window'); 
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button'); 
+            const micButton = document.getElementById('mic-button'); 
+            const mediaButton = document.getElementById('media-button'); 
+            const mediaInput = document.getElementById('media-input');     
+            const chatForm = document.getElementById('chat-form'); 
+            const projectIframe = document.getElementById('project-iframe');
+            
+            // Elementos de Ferramentas e Modal (Mantidos)
+            const viewCodeButton = document.getElementById('view-code-button');
+            const downloadButton = document.getElementById('download-button');
+            const codeModal = document.getElementById('code-modal');
+            const closeModalButton = document.querySelector('.close-button');
+            const codeDisplay = document.getElementById('code-display');
+            const copyCodeButton = document.getElementById('copy-code-button');
+            
+            // 2. Inicialização da API e Chat
+            if (typeof GoogleGenAI === 'undefined') { 
+                displayMessage("Erro: Gemini SDK não carregado.", 'helena');
+                return;
+            }
+
+            const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+            
+            // ⭐️ CONFIGURAÇÃO MULTIMODAL: Adicionando Geração de Imagem
+            const generationConfig = {
+                tools: [{ imageGeneration: {} }],
+                systemInstruction: `Você é Helena, uma Engenheira de Software, analista de conteúdo multimodal e criadora de imagens. Seu objetivo é:
+                    1. Se o usuário pedir um código, **gerar APENAS o código HTML completo e funcional** (começando com '<\!DOCTYPE html>'). Use o Tailwind CSS via CDN ou estilos inline.
+                    2. Se o usuário enviar uma imagem/arquivo, analise-o e responda de forma técnica.
+                    3. Se o usuário pedir para **'Gerar uma imagem'** ou **'Crie um banner 3D'**, use a ferramenta de geração de imagem.
+                    4. **NUNCA** inclua qualquer explicação, cabeçalho, ou texto antes do bloco de código ou da imagem.
+                    5. Seja rápida e eficaz (Velocidade da Luz).`,
+            };
+
+            const chat = ai.chats.create({ 
+                model: 'gemini-2.5-flash', 
+                config: generationConfig 
+            });
+
+            // 3. Funções Auxiliares de Display
+            function displayMessage(text, sender, isCode = false, generatedImageBase64 = null) {
+                const messageDiv = document.createElement('div');
+                const senderClass = sender === 'user' ? 'user-message' : 'helena-message'; 
+                messageDiv.className = `message ${senderClass}`;
+                
+                if (isCode) {
+                    lastGeneratedCode = text;
+                    viewCodeButton.disabled = false;
+                    downloadButton.disabled = false;
+                    
+                    messageDiv.innerHTML = '✨ Projeto Codificado! ✨ <br> <small>Visualizando no Preview à direita.</small>';
+                    projectIframe.srcdoc = text;
+                } else if (generatedImageBase64) {
+                    // ⭐️ Exibir imagem gerada pela IA
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'generated-image-container';
+
+                    const img = document.createElement('img');
+                    img.src = `data:image/jpeg;base64,${generatedImageBase64}`;
+                    img.className = 'generated-image';
+                    img.alt = 'Imagem gerada pela Helena.';
+                    imgContainer.appendChild(img);
+
+                    const downloadButton = document.createElement('button');
+                    downloadButton.textContent = 'Baixar Imagem ⬇️';
+                    downloadButton.className = 'download-image-button';
+                    
+                    // Lógica de Download da Imagem
+                    downloadButton.onclick = () => {
+                        const link = document.createElement('a');
+                        link.href = img.src;
+                        link.download = 'helena_imagem.jpeg';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    };
+
+                    messageDiv.innerHTML = `🖼️ **Imagem Gerada!** <br><small>${text}</small>`; // Texto de resposta
+                    messageDiv.appendChild(imgContainer);
+                    imgContainer.appendChild(downloadButton);
+                    
+                } else {
+                    // Mensagem de texto normal
+                    messageDiv.innerHTML = text.replace(/\n/g, '<br>'); 
+                }
+                
+                // Se houver arquivo selecionado, exibe-o no chat do usuário
+                if (sender === 'user' && selectedFile) {
+                    if (selectedFile.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = URL.createObjectURL(selectedFile);
+                        messageDiv.appendChild(img);
+                    } else {
+                         // Exibe que o arquivo (código/texto) foi anexado
+                        messageDiv.innerHTML += `<br> <small style="color: #ffcc00;">[Arquivo anexado: ${selectedFile.name}]</small>`;
+                    }
+                }
+
+                chatWindow.appendChild(messageDiv); 
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            function removeLoadingMessage() {
+                const loading = document.getElementById('loading');
+                if (loading) {
+                    loading.remove();
+                }
+            }
+            
+            function fileToGenerativePart(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve({
+                            inlineData: {
+                                data: reader.result.split(',')[1],
+                                mimeType: file.type,
+                            },
+                        });
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+
+            // 4. Função Principal de Envio e Chamada à API
+            async function sendMessage() {
+                const userText = userInput.value.trim();
+                const hasMedia = !!selectedFile;
+
+                if (userText === '' && !hasMedia) return;
+
+                displayMessage(userText, 'user');
+                
+                sendButton.disabled = true;
+                userInput.value = ''; 
+                mediaButton.textContent = '🖼️ Mídia'; 
+
+                let loadingMessage = document.createElement('div');
+                loadingMessage.className = 'message helena-message';
+                loadingMessage.id = 'loading';
+                loadingMessage.textContent = 'Helena trabalhando... ⚙️ (Velocidade da Luz!)';
+                
+                chatWindow.appendChild(loadingMessage); 
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+
+                try {
+                    const parts = [];
+                    if (hasMedia) {
+                        const mediaPart = await fileToGenerativePart(selectedFile);
+                        parts.push(mediaPart);
+                    }
+                    if (userText) {
+                        parts.push(userText);
+                    }
+
+                    const result = await chat.sendMessage({ message: parts });
+                    let responseText = result.text.trim();
+                    
+                    removeLoadingMessage();
+
+                    // ⭐️ Tratar Geração de Imagem
+                    if (result.imageGenerations && result.imageGenerations.length > 0) {
+                        const imageBase64 = result.imageGenerations[0].image.imageBytes;
+                        // Exibe a imagem no chat e adiciona o botão de download
+                        displayMessage(responseText, 'helena', false, imageBase64);
+                        
+                    } else if (responseText.startsWith('<!DOCTYPE html>')) {
+                         // Tratar Geração de Código HTML
+                         displayMessage(responseText, 'helena', true); 
+                    } else {
+                         // Tratar Mensagem de Texto Normal
+                         displayMessage(responseText, 'helena', false);
+                    }
+
+                } catch (error) {
+                    console.error("Erro ao chamar o Gemini:", error);
+                    removeLoadingMessage();
+                    displayMessage(`Erro no sistema (Falha de API). Verifique a chave ou limite de uso. Erro: ${error.message}`, 'helena'); 
+                } finally {
+                    sendButton.disabled = false;
+                    selectedFile = null; 
+                }
+            }
+
+            // 5. Escutadores de Eventos
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault(); 
+                sendMessage();
+            });
+            
+            // Lógica do Botão de Mídia (Atualizada para aceitar arquivos de código)
+            mediaButton.addEventListener('click', () => { mediaInput.click(); });
+
+            mediaInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    selectedFile = file;
+                    // Mostra o nome do arquivo anexado, seja imagem ou código
+                    mediaButton.textContent = `✅ ${file.name.substring(0, 15)}...`; 
+                    userInput.focus();
+                } else {
+                    selectedFile = null;
+                    mediaButton.textContent = '🖼️ Mídia';
+                }
+            });
+
+
+            // --- Lógica de Cópia e Download (Mantidas) ---
+            viewCodeButton.addEventListener('click', () => {
+                if (lastGeneratedCode) {
+                    codeDisplay.textContent = lastGeneratedCode; 
+                    codeModal.style.display = 'block'; 
+                    copyCodeButton.textContent = 'Copiar Código';
+                } else {
+                    alert('Nenhum código foi gerado ainda.');
+                }
+            });
+
+            closeModalButton.addEventListener('click', () => { codeModal.style.display = 'none'; });
+            window.addEventListener('click', (event) => { if (event.target === codeModal) { codeModal.style.display = 'none'; } });
+
+            copyCodeButton.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(lastGeneratedCode);
+                    copyCodeButton.textContent = 'Copiado! ✅';
+                    setTimeout(() => copyCodeButton.textContent = 'Copiar Código', 2000);
+                } catch (err) {
+                    alert('Erro ao copiar. Selecione e copie manualmente.');
+                }
+            });
+            
+            downloadButton.addEventListener('click', () => {
+                 if (lastGeneratedCode) {
+                    const element = document.createElement('a');
+                    const file = new Blob([lastGeneratedCode], { type: 'text/html' });
+                    element.href = URL.createObjectURL(file);
+                    element.download = "projeto_helena.html";
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                    alert('Download de projeto_helena.html iniciado.');
+                } else {
+                    alert('Gere um projeto primeiro para fazer o download!');
+                }
+            });
+
+
+            // Lógica do Microfone (Mantida)
+            if (micButton && 'webkitSpeechRecognition' in window) { 
+                const recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'pt-BR'; 
+
+                micButton.addEventListener('click', () => {
+                    micButton.textContent = '🔴';
+                    micButton.disabled = true;
+                    userInput.placeholder = 'Escutando... Fale agora.';
+                    recognition.start();
+                });
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    userInput.value = transcript;
+                    sendMessage(); 
+                };
+
+                recognition.onend = () => {
+                    micButton.textContent = '🎙️';
+                    micButton.disabled = false;
+                    userInput.placeholder = 'Descreva o PWA que você quer...';
+                };
+
+                recognition.onerror = (event) => {
+                    micButton.textContent = '🎙️';
+                    micButton.disabled = false;
+                    userInput.placeholder = 'Descreva o PWA que você quer...';
+                    console.error('Erro de reconhecimento de voz:', event.error);
+                    displayMessage('Erro ao ouvir. Tente digitar o comando.', 'helena');
+                };
+            } else if (micButton) {
+                micButton.textContent = '❌ Voz';
+                micButton.disabled = true;
+            }
+        }); 
+
+        // EVENTO GLOBAL PWA
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+    </script> 
+
+</body>
+</html>
